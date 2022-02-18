@@ -1,2 +1,5 @@
 python-telegram-bot==13.11
 environs==9.5.0
+numpy==1.22.2
+fuzzy-match==0.0.1
+redis==4.1.4
