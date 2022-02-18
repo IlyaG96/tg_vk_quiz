@@ -16,7 +16,6 @@ def build_menu(buttons, n_cols,
 
 
 def start(update, context):
-    print('here')
     text = 'Добро пожаловать в Джуманджи!'
     buttons = ['Начать игру!']
     keyboard = build_menu(buttons, n_cols=1)
@@ -37,7 +36,19 @@ def cancel(update, context):
 
 
 def ask_question(update, context):
-    pass
+    text = 'Поехали?'
+    buttons = ['Новый вопрос!', 'Сдаться', 'Мой счет']
+    keyboard = build_menu(buttons, n_cols=2)
+
+    update.message.reply_text(
+        text,
+        reply_markup=ReplyKeyboardMarkup(
+            keyboard,
+            resize_keyboard=True,
+        )
+    )
+
+    return 'ask_question'
 
 
 def main():
