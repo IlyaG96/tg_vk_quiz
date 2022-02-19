@@ -119,6 +119,7 @@ def check_answer(update, context):
 
 def draw(update, context):
 
+    correct_answer = context.bot_data['correct_answer']
     redis_base = context.bot_data['redis_base']
     user = update.message.chat_id
     question_num = int(context.bot_data['question_num'])
@@ -127,7 +128,7 @@ def draw(update, context):
     buttons = ['Ок']
     keyboard = build_menu(buttons, columns=1)
     update.message.reply_text(
-        f'Хорошо, перехожу к следующему вопросу',
+        f'Правильный ответ:\n {correct_answer}',
         reply_markup=ReplyKeyboardMarkup(
             keyboard=keyboard,
             resize_keyboard=True
