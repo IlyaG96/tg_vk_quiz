@@ -128,7 +128,7 @@ def draw(update, context):
     buttons = ['Ок']
     keyboard = build_menu(buttons, columns=1)
     update.message.reply_text(
-        f'Правильный ответ:\n {correct_answer}',
+        f'Правильный ответ {correct_answer}',
         reply_markup=ReplyKeyboardMarkup(
             keyboard=keyboard,
             resize_keyboard=True
