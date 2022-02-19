@@ -1,8 +1,8 @@
-import random
 from os import listdir
 
 
 def generate_questions():
+    #TODO clear 'Ответ, очистить до фраз'
 
     questions = {}
     question_start_number = 1
@@ -27,11 +27,9 @@ def generate_questions():
     return questions
 
 
-def chose_random_question(questions):
+def chose_question(questions, question_num):
 
-    question_num = random.randint(0, len(questions)-1)
-
-    quiz = questions.get(question_num)
+    quiz = questions.get(int(question_num))
 
     for quest, ans in quiz.items():
         return quest, ans

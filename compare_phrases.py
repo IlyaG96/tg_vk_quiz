@@ -1,5 +1,5 @@
 from string import punctuation
-from fuzzy_match import match, algorithims
+from fuzzy_match import algorithims
 
 
 def clear_phrase(phrase):
