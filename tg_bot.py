@@ -45,27 +45,32 @@ def start(update, context):
 
 
 def cancel(update, context):
-    pass
+
+    update.message.reply_text(
+        'Мое дело предложить, твое - отказаться'
+        ' Будет скучно - пиши.',
+        reply_markup=ReplyKeyboardRemove()
+    )
+    return ConversationHandler.END
 
 
 def ask_question(update, context):
-    print(1)
     user = update.message.chat_id
-    print(2)
     redis_base = context.bot_data['redis_base']
     question_num = read_question_db(redis_base, user)
     if not question_num:
         question_num = 1
-    print(3)
+
     questions = context.bot_data['questions']
     question, answer = chose_question(questions, question_num)
     context.user_data['correct_answer'] = answer
+    context.user_data['question'] = question
     context.user_data['question_num'] = question_num
     write_question_db(redis_base, user, question_num)
 
     buttons = ['Сдаться', 'Мой счет']
     keyboard = build_menu(buttons, columns=2)
-    print(4)
+
     update.message.reply_text(
         question,
         reply_markup=ReplyKeyboardMarkup(
@@ -73,7 +78,7 @@ def ask_question(update, context):
             resize_keyboard=True,
         )
     )
-    print(5)
+
     return BotStates.CHECK_ANSWER
 
 
@@ -148,18 +153,23 @@ def view_score(update, context):
     if not score:
         score = 0
 
-    buttons = ['Ок']
-    keyboard = build_menu(buttons, columns=1)
+    buttons = ['Сдаться', 'Мой счет']
+    question = context.user_data['question']
+    keyboard = build_menu(buttons, columns=2)
+    context.bot.send_message(
+        chat_id=user,
+        text=f'Твой счет: {score} очков'
+    )
 
     update.message.reply_text(
-        f'Твой счет: {score} очков',
+        question,
         reply_markup=ReplyKeyboardMarkup(
-            keyboard=keyboard,
-            resize_keyboard=True
+            keyboard,
+            resize_keyboard=True,
         )
     )
 
-    return BotStates.ASK_QUESTION
+    return BotStates.CHECK_ANSWER
 
 
 def main():
@@ -186,7 +196,7 @@ def main():
                 MessageHandler(Filters.regex('^Сдаться$'), draw),
                 MessageHandler(Filters.regex('^Мой счет$'), view_score),
                 MessageHandler(Filters.regex('^Попробовать еще раз!$'), ask_question),
-                MessageHandler(Filters.text, ask_question)
+                MessageHandler(Filters.text, check_answer)
             ],
             BotStates.USER_CHOSE_ACTION: [
                 MessageHandler(Filters.regex('^Новый вопрос!$'), ask_question),
