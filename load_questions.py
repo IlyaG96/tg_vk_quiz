@@ -19,7 +19,8 @@ def generate_questions():
             if 'Вопрос' in sentence:
                 question = sentence
             if 'Ответ' in sentence:
-                answer = sentence
+                sentence = sentence.split('Ответ')
+                answer = sentence[1]
 
                 questions.update({question_start_number: {question: answer}})
                 question_start_number += 1
