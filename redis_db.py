@@ -1,5 +1,6 @@
 import redis
 from environs import Env
+import json
 
 
 def write_to_db(user, question):
@@ -21,8 +22,12 @@ def main():
                        password=password,
                        decode_responses=True)
 
-    base.set('foo', 'bar')
-    print(base.get('foo'))
+    data = {'question': 3}
+    base.hset('quiz', 'player', json.dumps(data))
+    player_info_string = (base.hget('quiz', 'player'))
+    player_info_json = json.loads(player_info_string)
+
+
 
 
 if __name__ == '__main__':
