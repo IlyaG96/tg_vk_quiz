@@ -2,7 +2,6 @@ from os import listdir
 
 
 def generate_questions():
-    #TODO clear 'Ответ, очистить до фраз'
 
     questions = {}
     question_start_number = 1
