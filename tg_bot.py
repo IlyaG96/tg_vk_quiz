@@ -1,4 +1,4 @@
-from telegram import ReplyKeyboardMarkup
+from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import (CommandHandler, ConversationHandler,
                           Filters, MessageHandler, Updater)
 from environs import Env
@@ -49,22 +49,23 @@ def cancel(update, context):
 
 
 def ask_question(update, context):
-
+    print(1)
     user = update.message.chat_id
-
+    print(2)
     redis_base = context.bot_data['redis_base']
     question_num = read_question_db(redis_base, user)
     if not question_num:
         question_num = 1
+    print(3)
     questions = context.bot_data['questions']
     question, answer = chose_question(questions, question_num)
-    context.bot_data['correct_answer'] = answer
-    context.bot_data['question_num'] = question_num
+    context.user_data['correct_answer'] = answer
+    context.user_data['question_num'] = question_num
     write_question_db(redis_base, user, question_num)
 
     buttons = ['Сдаться', 'Мой счет']
     keyboard = build_menu(buttons, columns=2)
-
+    print(4)
     update.message.reply_text(
         question,
         reply_markup=ReplyKeyboardMarkup(
@@ -72,7 +73,7 @@ def ask_question(update, context):
             resize_keyboard=True,
         )
     )
-
+    print(5)
     return BotStates.CHECK_ANSWER
 
 
@@ -80,22 +81,22 @@ def check_answer(update, context):
 
     redis_base = context.bot_data['redis_base']
     user = update.message.chat_id
-    correct_answer = context.bot_data['correct_answer']
+    correct_answer = context.user_data['correct_answer']
     user_answer = update.message.text
     buttons = ['Новый вопрос!']
     keyboard = build_menu(buttons, columns=2)
     if compare_phrases(user_answer, correct_answer):
 
-        score = int(read_scores_db(redis_base, user))
-        score += 1
+        score = read_scores_db(redis_base, user)
         if not score:
-            score = 1
-        question_num = int(context.bot_data['question_num'])
+            score = 0
+        score = int(score) + 1
+        question_num = int(context.user_data['question_num'])
         question_num += 1
         write_scores_db(redis_base, user, score)
         write_question_db(redis_base, user, question_num)
         update.message.reply_text(
-            f'Ура! Ответ правильный! Ваш Счет: {score}',
+            f'Ура! Ответ правильный! Твой счет: {score}',
             reply_markup=ReplyKeyboardMarkup(
                 keyboard,
                 resize_keyboard=True,
@@ -107,7 +108,7 @@ def check_answer(update, context):
         buttons = ['Попробовать еще раз!', 'Сдаться']
         keyboard = build_menu(buttons, columns=2)
         update.message.reply_text(
-            f'Пока неверно. Попробуешь еще или сдаешься?',
+            'Пока неверно. Попробуешь еще или сдаешься?',
             reply_markup=ReplyKeyboardMarkup(
                 keyboard,
                 resize_keyboard=True,
@@ -119,16 +120,39 @@ def check_answer(update, context):
 
 def draw(update, context):
 
-    correct_answer = context.bot_data['correct_answer']
+    correct_answer = context.user_data['correct_answer']
     redis_base = context.bot_data['redis_base']
     user = update.message.chat_id
-    question_num = int(context.bot_data['question_num'])
+    question_num = int(context.user_data['question_num'])
     question_num += 1
     write_question_db(redis_base, user, question_num)
+
     buttons = ['Ок']
     keyboard = build_menu(buttons, columns=1)
     update.message.reply_text(
         f'Правильный ответ {correct_answer}',
+        reply_markup=ReplyKeyboardMarkup(
+            keyboard=keyboard,
+            resize_keyboard=True
+        )
+    )
+
+    return BotStates.ASK_QUESTION
+
+
+def view_score(update, context):
+
+    user = update.message.chat_id
+    redis_base = context.bot_data['redis_base']
+    score = read_scores_db(redis_base, user)
+    if not score:
+        score = 0
+
+    buttons = ['Ок']
+    keyboard = build_menu(buttons, columns=1)
+
+    update.message.reply_text(
+        f'Твой счет: {score} очков',
         reply_markup=ReplyKeyboardMarkup(
             keyboard=keyboard,
             resize_keyboard=True
@@ -160,13 +184,15 @@ def main():
             ],
             BotStates.CHECK_ANSWER: [
                 MessageHandler(Filters.regex('^Сдаться$'), draw),
+                MessageHandler(Filters.regex('^Мой счет$'), view_score),
                 MessageHandler(Filters.regex('^Попробовать еще раз!$'), ask_question),
-                MessageHandler(Filters.text, check_answer)
+                MessageHandler(Filters.text, ask_question)
             ],
             BotStates.USER_CHOSE_ACTION: [
                 MessageHandler(Filters.regex('^Новый вопрос!$'), ask_question),
                 MessageHandler(Filters.regex('^Попробовать еще раз!$'), ask_question),
                 MessageHandler(Filters.regex('^Сдаться$'), draw),
+                MessageHandler(Filters.text, check_answer)
             ]
         },
 
