@@ -69,7 +69,7 @@ def main(vk_token):
                     random_id=get_random_id(),
                     keyboard=keyboard_without_draw().get_keyboard(),
                     message=f'Правильный ответ {answer} \n'
-                            f'Чтобы перейти к следующему вопросу, нажми "Новый вопрос"'
+                            f'Чтобы перейти к следующему вопросу, нажми "Вопрос"'
                 )
 
             elif message == 'Мой счет':

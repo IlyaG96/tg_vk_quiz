@@ -55,17 +55,20 @@ def cancel(update, context):
 
 
 def ask_question(update, context):
+
     user = update.message.chat_id
+    questions = context.bot_data['questions']
     redis_base = context.bot_data['redis_base']
     question_num = read_question_db(redis_base, user)
+
     if not question_num:
         question_num = 1
 
-    questions = context.bot_data['questions']
     question, answer = chose_question(questions, question_num)
     context.user_data['correct_answer'] = answer
     context.user_data['question'] = question
     context.user_data['question_num'] = question_num
+
     write_question_db(redis_base, user, question_num)
 
     buttons = ['Сдаться', 'Мой счет']
@@ -88,8 +91,10 @@ def check_answer(update, context):
     user = update.message.chat_id
     correct_answer = context.user_data['correct_answer']
     user_answer = update.message.text
+
     buttons = ['Новый вопрос!']
     keyboard = build_menu(buttons, columns=2)
+
     if compare_phrases(user_answer, correct_answer):
 
         score = read_scores_db(redis_base, user)
@@ -112,6 +117,7 @@ def check_answer(update, context):
     else:
         buttons = ['Попробовать еще раз!', 'Сдаться']
         keyboard = build_menu(buttons, columns=2)
+
         update.message.reply_text(
             'Пока неверно. Попробуешь еще или сдаешься?',
             reply_markup=ReplyKeyboardMarkup(
@@ -134,8 +140,9 @@ def draw(update, context):
 
     buttons = ['Ок']
     keyboard = build_menu(buttons, columns=1)
+
     update.message.reply_text(
-        f'Правильный ответ {correct_answer}',
+        f'Правильный ответ: {correct_answer}',
         reply_markup=ReplyKeyboardMarkup(
             keyboard=keyboard,
             resize_keyboard=True
@@ -150,12 +157,14 @@ def view_score(update, context):
     user = update.message.chat_id
     redis_base = context.bot_data['redis_base']
     score = read_scores_db(redis_base, user)
+    question = context.user_data['question']
+
     if not score:
         score = 0
 
     buttons = ['Сдаться', 'Мой счет']
-    question = context.user_data['question']
     keyboard = build_menu(buttons, columns=2)
+
     context.bot.send_message(
         chat_id=user,
         text=f'Твой счет: {score} очков'
