@@ -3,3 +3,4 @@ environs==9.5.0
 numpy==1.22.2
 fuzzy-match==0.0.1
 redis==4.1.4
+vk-api==11.9.7
