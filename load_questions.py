@@ -7,7 +7,7 @@ def generate_questions():
 
     env = Env()
     env.read_env()
-    questions_path = env.str('path_to_questions', 'questions')
+    questions_path = env.str('PATH_TO_QUESTIONS', 'questions')
     questions = {}
     question_start_number = 1
     question_files = listdir(path=questions_path)
