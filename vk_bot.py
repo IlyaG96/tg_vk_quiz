@@ -87,7 +87,7 @@ def main(vk_token):
                     question_num = int(question_num) + 1
 
                     write_question_db(redis_base, user, question_num)
-                    write_scores_db(redis_base, user, question_num)
+                    write_scores_db(redis_base, user, scores)
 
                     vk.messages.send(
                         user_id=user,
