@@ -195,7 +195,6 @@ def main():
             BotStates.CHECK_ANSWER: [
                 MessageHandler(Filters.regex('^Сдаться$'), draw),
                 MessageHandler(Filters.regex('^Мой счет$'), view_score),
-                MessageHandler(Filters.regex('^Попробовать еще раз!$'), ask_question),
                 MessageHandler(Filters.text, check_answer)
             ],
             BotStates.USER_CHOSE_ACTION: [
