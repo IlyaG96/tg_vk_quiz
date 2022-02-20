@@ -8,7 +8,8 @@ from environs import Env
 import vk_api
 
 
-def keyboard1():
+def default_keyboard():
+
     keyboard = VkKeyboard(one_time=False)
     keyboard.add_button('Вопрос', color=VkKeyboardColor.POSITIVE)
     keyboard.add_button('Сдаться', color=VkKeyboardColor.NEGATIVE)
@@ -18,7 +19,7 @@ def keyboard1():
     return keyboard
 
 
-def keyboard2():
+def keyboard_without_draw():
     keyboard = VkKeyboard(one_time=False)
     keyboard.add_button('Вопрос', color=VkKeyboardColor.POSITIVE)
     keyboard.add_line()
@@ -53,7 +54,7 @@ def main(vk_token):
                 vk.messages.send(
                     user_id=user,
                     random_id=get_random_id(),
-                    keyboard=keyboard1().get_keyboard(),
+                    keyboard=default_keyboard().get_keyboard(),
                     message=question
                 )
 
@@ -66,7 +67,7 @@ def main(vk_token):
                 vk.messages.send(
                     user_id=user,
                     random_id=get_random_id(),
-                    keyboard=keyboard1().get_keyboard(),
+                    keyboard=keyboard_without_draw().get_keyboard(),
                     message=f'Правильный ответ {answer} \n'
                             f'Чтобы перейти к следующему вопросу, нажми "Новый вопрос"'
                 )
@@ -75,14 +76,12 @@ def main(vk_token):
                 vk.messages.send(
                     user_id=user,
                     random_id=get_random_id(),
-                    keyboard=keyboard2().get_keyboard(),
+                    keyboard=keyboard_without_draw().get_keyboard(),
                     message=f'Твой счет: {scores}'
                 )
 
             else:
                 if compare_phrases(message, answer):
-                    print(answer)
-                    print(message)
 
                     scores = int(scores) + 1
                     question_num = int(question_num) + 1
@@ -93,17 +92,15 @@ def main(vk_token):
                     vk.messages.send(
                         user_id=user,
                         random_id=get_random_id(),
-                        keyboard=keyboard2().get_keyboard(),
+                        keyboard=keyboard_without_draw().get_keyboard(),
                         message=f'Ура, правильно! Твой счет: {scores}.\n'
                                 f'Для перехода к новому вопросу нажми "Вопрос"'
                     )
                 else:
-                    print(answer)
-                    print(message)
                     vk.messages.send(
                         user_id=user,
                         random_id=get_random_id(),
-                        keyboard=keyboard1().get_keyboard(),
+                        keyboard=default_keyboard().get_keyboard(),
                         message=f'Пока неверно. Можешь продолжать пробовать или сдаться.'
                     )
 
