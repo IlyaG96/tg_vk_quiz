@@ -1,4 +1,4 @@
-from load_questions import generate_questions, chose_question
+from load_questions import generate_questions
 from compare_phrases import compare_phrases
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from vk_api.longpoll import VkLongPoll, VkEventType
@@ -54,13 +54,13 @@ def main():
 
             question_num = redis_base.hget(user, 'question_num')
             if not question_num:
-                question_num = 1
+                question_num = 0
 
             scores = redis_base.hget(user, 'scores')
             if not scores:
                 scores = 0
 
-            question, answer = chose_question(questions, question_num)
+            question, answer = questions[int(question_num)]
 
             if message == 'Вопрос':
                 vk.messages.send(

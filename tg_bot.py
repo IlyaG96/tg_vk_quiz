@@ -2,7 +2,7 @@ from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import (CommandHandler, ConversationHandler,
                           Filters, MessageHandler, Updater)
 from environs import Env
-from load_questions import generate_questions, chose_question
+from load_questions import generate_questions
 from compare_phrases import compare_phrases
 from enum import Enum
 import redis
@@ -62,9 +62,10 @@ def ask_question(update, context):
     question_num = redis_base.hget(user, 'question_num')
 
     if not question_num:
-        question_num = 1
+        question_num = 0
 
-    question, answer = chose_question(questions, question_num)
+    question, answer = questions[int(question_num)]
+
     context.user_data['correct_answer'] = answer
     context.user_data['question'] = question
     context.user_data['question_num'] = question_num

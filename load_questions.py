@@ -8,8 +8,7 @@ def generate_questions():
     env = Env()
     env.read_env()
     questions_path = env.str('PATH_TO_QUESTIONS', 'questions')
-    questions = {}
-    question_start_number = 1
+    questions = []
     question_files = listdir(path=questions_path)
 
     for question_file in question_files:
@@ -27,14 +26,6 @@ def generate_questions():
                 # we use index 1 because answer always stands after 'Ответ:'
                 answer = sentence[1].strip('\n')
 
-                questions.update({question_start_number: {question: answer}})
-                question_start_number += 1
+                questions.append((question, answer))
 
     return questions
-
-
-def chose_question(questions, question_num):
-
-    quiz = questions.get(int(question_num))
-
-    return tuple(quiz.items())
