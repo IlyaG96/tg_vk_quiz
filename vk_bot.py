@@ -8,7 +8,7 @@ import vk_api
 import redis
 
 
-def default_keyboard():
+def build_default_keyboard():
 
     keyboard = VkKeyboard(one_time=False)
     keyboard.add_button('Вопрос', color=VkKeyboardColor.POSITIVE)
@@ -19,7 +19,7 @@ def default_keyboard():
     return keyboard
 
 
-def keyboard_without_draw():
+def build_keyboard_without_draw():
     keyboard = VkKeyboard(one_time=False)
     keyboard.add_button('Вопрос', color=VkKeyboardColor.POSITIVE)
     keyboard.add_line()
@@ -66,7 +66,7 @@ def main():
                 vk.messages.send(
                     user_id=user,
                     random_id=get_random_id(),
-                    keyboard=default_keyboard().get_keyboard(),
+                    keyboard=build_default_keyboard().get_keyboard(),
                     message=question
                 )
 
@@ -79,7 +79,7 @@ def main():
                 vk.messages.send(
                     user_id=user,
                     random_id=get_random_id(),
-                    keyboard=keyboard_without_draw().get_keyboard(),
+                    keyboard=build_keyboard_without_draw().get_keyboard(),
                     message=f'Правильный ответ {answer} \n'
                             f'Чтобы перейти к следующему вопросу, нажми "Вопрос"'
                 )
@@ -88,7 +88,7 @@ def main():
                 vk.messages.send(
                     user_id=user,
                     random_id=get_random_id(),
-                    keyboard=keyboard_without_draw().get_keyboard(),
+                    keyboard=build_keyboard_without_draw().get_keyboard(),
                     message=f'Твой счет: {scores}'
                 )
 
@@ -104,7 +104,7 @@ def main():
                     vk.messages.send(
                         user_id=user,
                         random_id=get_random_id(),
-                        keyboard=keyboard_without_draw().get_keyboard(),
+                        keyboard=build_keyboard_without_draw().get_keyboard(),
                         message=f'Ура, правильно! Твой счет: {scores}.\n'
                                 f'Для перехода к новому вопросу нажми "Вопрос"'
                     )
@@ -112,6 +112,6 @@ def main():
                     vk.messages.send(
                         user_id=user,
                         random_id=get_random_id(),
-                        keyboard=default_keyboard().get_keyboard(),
+                        keyboard=build_default_keyboard().get_keyboard(),
                         message=f'Пока неверно. Можешь продолжать пробовать или сдаться.'
                     )
