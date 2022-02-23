@@ -37,6 +37,4 @@ def chose_question(questions, question_num):
 
     quiz = questions.get(int(question_num))
 
-    for question, answer in quiz.items():
-        return question, answer
-
+    return tuple(quiz.items())
