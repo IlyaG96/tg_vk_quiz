@@ -17,5 +17,6 @@ def compare_phrases(user_answer, quiz_answer):
 
     sin_compare = algorithims.cosine(user_answer, quiz_answer)
     trigram = algorithims.trigram(user_answer, quiz_answer)
+    return sin_compare >= 0.5 or trigram >= 0.5
 
-    return True if (sin_compare >= 0.5 or trigram >= 0.5) else False
+
