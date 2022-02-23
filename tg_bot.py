@@ -3,9 +3,9 @@ from telegram.ext import (CommandHandler, ConversationHandler,
                           Filters, MessageHandler, Updater)
 from environs import Env
 from load_questions import generate_questions, chose_question
-from redis_db import run_base, write_question_db, write_scores_db, read_question_db, read_scores_db
 from compare_phrases import compare_phrases
 from enum import Enum
+import redis
 
 
 class BotStates(Enum):
@@ -59,7 +59,7 @@ def ask_question(update, context):
     user = update.message.chat_id
     questions = context.bot_data['questions']
     redis_base = context.bot_data['redis_base']
-    question_num = read_question_db(redis_base, user)
+    question_num = redis_base.hget(user, 'question_num')
 
     if not question_num:
         question_num = 1
@@ -69,7 +69,7 @@ def ask_question(update, context):
     context.user_data['question'] = question
     context.user_data['question_num'] = question_num
 
-    write_question_db(redis_base, user, question_num)
+    redis_base.hset(user, 'question_num', question_num)
 
     buttons = ['Сдаться', 'Мой счет']
     keyboard = build_menu(buttons, columns=2)
@@ -97,14 +97,14 @@ def check_answer(update, context):
 
     if compare_phrases(user_answer, correct_answer):
 
-        score = read_scores_db(redis_base, user)
+        score = redis_base.hget(user, 'scores')
         if not score:
             score = 0
         score = int(score) + 1
         question_num = int(context.user_data['question_num'])
         question_num += 1
-        write_scores_db(redis_base, user, score)
-        write_question_db(redis_base, user, question_num)
+        redis_base.hset(user, 'scores', score)
+        redis_base.hset(user, 'question_num', question_num)
         update.message.reply_text(
             f'Ура! Ответ правильный! Твой счет: {score}',
             reply_markup=ReplyKeyboardMarkup(
@@ -136,7 +136,7 @@ def draw(update, context):
     user = update.message.chat_id
     question_num = int(context.user_data['question_num'])
     question_num += 1
-    write_question_db(redis_base, user, question_num)
+    redis_base.hset(user, 'question_num', question_num)
 
     buttons = ['Ок']
     keyboard = build_menu(buttons, columns=1)
@@ -156,7 +156,7 @@ def view_score(update, context):
 
     user = update.message.chat_id
     redis_base = context.bot_data['redis_base']
-    score = read_scores_db(redis_base, user)
+    score = redis_base.hget(user, 'scores')
     question = context.user_data['question']
 
     if not score:
@@ -184,10 +184,18 @@ def view_score(update, context):
 def main():
     env = Env()
     env.read_env()
-    TELEGRAM_TOKEN = env.str('TELEGRAM_TOKEN')
-    updater = Updater(TELEGRAM_TOKEN, use_context=True)
+    telegram_token = env.str('TELEGRAM_TOKEN')
+    redis_host = env.str('REDIS_HOST')
+    redis_port = env.str('REDIS_PORT')
+    redis_password = env.str('REDIS_PASSWORD')
+    updater = Updater(telegram_token, use_context=True)
     questions = generate_questions()
-    redis_base = run_base()
+
+    redis_base = redis.Redis(host=redis_host,
+                             port=redis_port,
+                             password=redis_password,
+                             decode_responses=True)
+
     dispatcher = updater.dispatcher
     dispatcher.bot_data['questions'] = questions
     dispatcher.bot_data['redis_base'] = redis_base

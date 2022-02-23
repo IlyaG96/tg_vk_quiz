@@ -1,4 +1,3 @@
-from redis_db import run_base, write_question_db, write_scores_db, read_question_db, read_scores_db
 from load_questions import generate_questions, chose_question
 from compare_phrases import compare_phrases
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
@@ -6,6 +5,7 @@ from vk_api.longpoll import VkLongPoll, VkEventType
 from vk_api.utils import get_random_id
 from environs import Env
 import vk_api
+import redis
 
 
 def default_keyboard():
@@ -28,23 +28,35 @@ def keyboard_without_draw():
     return keyboard
 
 
-def main(vk_token):
+def main():
 
-    redis_base = run_base()
+    env = Env()
+    env.read_env()
+    vk_token = env.str('VK_TOKEN')
+    redis_host = env.str('REDIS_HOST')
+    redis_port = env.str('REDIS_PORT')
+    redis_password = env.str('REDIS_PASSWORD')
     questions = generate_questions()
+
+    redis_base = redis.Redis(host=redis_host,
+                             port=redis_port,
+                             password=redis_password,
+                             decode_responses=True)
+
     vk_session = vk_api.VkApi(token=vk_token)
     vk = vk_session.get_api()
     longpoll = VkLongPoll(vk_session)
+
     for event in longpoll.listen():
         if event.type == VkEventType.MESSAGE_NEW and event.to_me:
             user = event.user_id
             message = event.text
 
-            question_num = read_question_db(redis_base, user)
+            question_num = redis_base.hget(user, 'question_num')
             if not question_num:
                 question_num = 1
 
-            scores = read_scores_db(redis_base, user)
+            scores = redis_base.hget(user, 'scores')
             if not scores:
                 scores = 0
 
@@ -60,9 +72,9 @@ def main(vk_token):
 
             elif message == 'Сдаться':
 
-                question_num = read_question_db(redis_base, user)
+                question_num = redis_base.hget(user, 'question_num')
                 question_num = int(question_num) + 1
-                write_question_db(redis_base, user, question_num)
+                redis_base.hset(user, 'question_num', question_num)
 
                 vk.messages.send(
                     user_id=user,
@@ -86,8 +98,8 @@ def main(vk_token):
                     scores = int(scores) + 1
                     question_num = int(question_num) + 1
 
-                    write_question_db(redis_base, user, question_num)
-                    write_scores_db(redis_base, user, scores)
+                    redis_base.hset(user, 'question_num', question_num)
+                    redis_base.hset(user, 'scores', scores)
 
                     vk.messages.send(
                         user_id=user,
@@ -103,11 +115,3 @@ def main(vk_token):
                         keyboard=default_keyboard().get_keyboard(),
                         message=f'Пока неверно. Можешь продолжать пробовать или сдаться.'
                     )
-
-
-if __name__ == '__main__':
-    env = Env()
-    env.read_env()
-    vk_token = env.str('VK_TOKEN')
-    main(vk_token)
-
