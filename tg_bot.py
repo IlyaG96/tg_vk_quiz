@@ -14,24 +14,12 @@ class BotStates(Enum):
     USER_CHOSE_ACTION = 3
 
 
-def build_menu(buttons, columns,
-               header_buttons=None,
-               footer_buttons=None):
-    menu = [buttons[button:button + columns] for button in range(0, len(buttons), columns)]
-    if header_buttons:
-        menu.insert(0, header_buttons)
-    if footer_buttons:
-        menu.append(footer_buttons)
-    return menu
-
-
 def start(update, context):
     text = f'Привет! Я - бот, который может по достоинству оценить широкий кругозор и эрудированность. ' \
            'Я буду задавать тебе вопросы на разные темы, а ты пиши ответы. ' \
            'К сожалению, меня еще не до конца натренировали, поэтому я иногда ошибаюсь при проверке ответов.' \
            'Удачи!'
-    buttons = ['Начать игру!']
-    keyboard = build_menu(buttons, columns=1)
+    keyboard = [['Начать игру!']]
 
     update.message.reply_text(
         text,
@@ -72,8 +60,7 @@ def ask_question(update, context):
 
     redis_base.hset(user, 'question_num', question_num)
 
-    buttons = ['Сдаться', 'Мой счет']
-    keyboard = build_menu(buttons, columns=2)
+    keyboard = [['Сдаться'], ['Мой счет']]
 
     update.message.reply_text(
         question,
@@ -93,8 +80,7 @@ def check_answer(update, context):
     correct_answer = context.user_data['correct_answer']
     user_answer = update.message.text
 
-    buttons = ['Новый вопрос!']
-    keyboard = build_menu(buttons, columns=2)
+    keyboard = [['Новый вопрос!']]
 
     if compare_phrases(user_answer, correct_answer):
 
@@ -116,8 +102,7 @@ def check_answer(update, context):
         return BotStates.USER_CHOSE_ACTION
 
     else:
-        buttons = ['Попробовать еще раз!', 'Сдаться']
-        keyboard = build_menu(buttons, columns=2)
+        keyboard = [['Попробовать еще раз!'], ['Сдаться']]
 
         update.message.reply_text(
             'Пока неверно. Попробуешь еще или сдаешься?',
@@ -139,8 +124,7 @@ def draw(update, context):
     question_num += 1
     redis_base.hset(user, 'question_num', question_num)
 
-    buttons = ['Ок']
-    keyboard = build_menu(buttons, columns=1)
+    keyboard = [['Ок']]
 
     update.message.reply_text(
         f'Правильный ответ: {correct_answer}',
@@ -163,8 +147,7 @@ def view_score(update, context):
     if not score:
         score = 0
 
-    buttons = ['Сдаться', 'Мой счет']
-    keyboard = build_menu(buttons, columns=2)
+    keyboard = [['Сдаться'], ['Мой счет']]
 
     context.bot.send_message(
         chat_id=user,
