@@ -72,7 +72,6 @@ def main():
 
             elif message == 'Сдаться':
 
-                question_num = redis_base.hget(user, 'question_num')
                 question_num = int(question_num) + 1
                 redis_base.hset(user, 'question_num', question_num)
 
