@@ -114,3 +114,7 @@ def main():
                         keyboard=build_default_keyboard().get_keyboard(),
                         message=f'Пока неверно. Можешь продолжать пробовать или сдаться.'
                     )
+
+
+if __name__ == '__main__':
+    main()
