@@ -189,7 +189,8 @@ def main():
 
     start_quiz = ConversationHandler(
         entry_points=[
-            CommandHandler('start', start)
+            CommandHandler('start', start),
+            CommandHandler('cancel', cancel)
         ],
         states={
             BotStates.ASK_QUESTION: [
@@ -211,6 +212,7 @@ def main():
 
         per_user=True,
         per_chat=True,
+        allow_reentry=True,
         fallbacks=[
             CommandHandler('cancel', cancel)],
     )
