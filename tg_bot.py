@@ -6,6 +6,7 @@ from load_questions import generate_questions
 from compare_phrases import compare_phrases
 from enum import Enum
 import redis
+from textwrap import dedent
 
 
 class BotStates(Enum):
@@ -15,10 +16,12 @@ class BotStates(Enum):
 
 
 def start(update, context):
-    text = f'Привет! Я - бот, который может по достоинству оценить широкий кругозор и эрудированность. ' \
-           'Я буду задавать тебе вопросы на разные темы, а ты пиши ответы. ' \
-           'К сожалению, меня еще не до конца натренировали, поэтому я иногда ошибаюсь при проверке ответов.' \
-           'Удачи!'
+    text = dedent('''
+    Привет! Я - бот, который может по достоинству оценить широкий кругозор и эрудированность.
+    Я буду задавать тебе вопросы на разные темы, а ты пиши ответы.
+    К сожалению, меня еще не до конца натренировали, поэтому я иногда ошибаюсь при проверке ответов.
+    Удачи!
+    ''')
     keyboard = [['Начать игру!']]
 
     update.message.reply_text(
@@ -34,16 +37,19 @@ def start(update, context):
 
 def cancel(update, context):
 
+    text = dedent('''
+        Мое дело - предложить, твоё - отказаться.
+        Будет скучно - пиши.
+        ''')
+
     update.message.reply_text(
-        'Мое дело предложить, твое - отказаться'
-        ' Будет скучно - пиши.',
+        text,
         reply_markup=ReplyKeyboardRemove()
     )
     return ConversationHandler.END
 
 
 def ask_question(update, context):
-
     user = update.message.chat_id
     questions = context.bot_data['questions']
     redis_base = context.bot_data['redis_base']
@@ -74,7 +80,6 @@ def ask_question(update, context):
 
 
 def check_answer(update, context):
-
     redis_base = context.bot_data['redis_base']
     user = update.message.chat_id
     correct_answer = context.user_data['correct_answer']
@@ -116,7 +121,6 @@ def check_answer(update, context):
 
 
 def draw(update, context):
-
     correct_answer = context.user_data['correct_answer']
     redis_base = context.bot_data['redis_base']
     user = update.message.chat_id
@@ -138,7 +142,6 @@ def draw(update, context):
 
 
 def view_score(update, context):
-
     user = update.message.chat_id
     redis_base = context.bot_data['redis_base']
     score = redis_base.hget(user, 'scores')
